@@ -221,6 +221,7 @@
     return null;
   }
   function readWorkbook(buffer) {
+    if (typeof ExcelJS === 'undefined') throw new Error('The Excel library did not load. Check that exceljs.min.js is in the main folder of the GitHub repo, then refresh the page.');
     var wb = new ExcelJS.Workbook();
     return wb.xlsx.load(buffer).then(function () {
       var sheets = wb.worksheets.slice();
@@ -835,7 +836,7 @@
 
   if (typeof ExcelJS === 'undefined') {
     document.addEventListener('DOMContentLoaded', function () {
-      notice($('parseMsg'), 'err', 'The Excel library (lib/exceljs.min.js) did not load. Check that the "lib" folder was uploaded to GitHub.');
+      notice($('parseMsg'), 'err', 'The Excel library did not load. Check that exceljs.min.js is in the main folder of the GitHub repo (next to index.html), then refresh the page.');
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
