@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RES Stock Breakdown</title>
+<meta name="theme-color" content="#3F3F40">
+<style>
+  :root{
+    --yellow:#FDDD00; --dark:#3F3F40; --grey:#9EA0A3; --air:#D6D6D6; --clay:#CC645C; --blue:#78A1BB;
+    --bg:#F4F4F4; --card:#FFFFFF; --text:#2B2B2C; --muted:#6B6D70; --line:#E2E2E2; --ok:#4E8A5B;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.45}
+  header{background:var(--dark);color:#fff;padding:14px 16px;border-bottom:5px solid var(--yellow)}
+  header .wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  header h1{font-size:19px;margin:0;font-weight:700;letter-spacing:.3px}
+  header .sub{color:var(--air);font-size:13px}
+  .badge{background:var(--yellow);color:var(--dark);font-weight:700;border-radius:4px;padding:2px 8px;font-size:12px}
+  main{max-width:1100px;margin:0 auto;padding:16px}
+  .card{background:var(--card);border-radius:10px;padding:16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .card h2{font-size:17px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+  .step{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--yellow);color:var(--dark);font-size:13px;font-weight:800;flex:none}
+  .muted{color:var(--muted);font-size:13px}
+  label{font-weight:600;font-size:14px}
+  input[type=date],input[type=number],input[type=text],select{font:inherit;padding:8px 10px;border:1px solid #C9C9C9;border-radius:6px;background:#fff;max-width:100%}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+  .row > div{display:flex;flex-direction:column;gap:4px}
+  .btn{font:inherit;font-weight:700;border:0;border-radius:8px;padding:11px 16px;cursor:pointer;background:var(--dark);color:#fff}
+  .btn.primary{background:var(--yellow);color:var(--dark)}
+  .btn.ghost{background:#fff;color:var(--dark);border:1px solid var(--dark)}
+  .btn.small{padding:6px 10px;font-size:13px}
+  .btn.danger{background:#fff;color:var(--clay);border:1px solid var(--clay)}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .drop{border:2px dashed var(--grey);border-radius:10px;padding:22px 14px;text-align:center;background:#FAFAFA;cursor:pointer}
+  .drop.over{border-color:var(--dark);background:#FFFBE0}
+  .drop input{display:none}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+  .stat{background:#FAFAFA;border:1px solid var(--line);border-left:5px solid var(--blue);border-radius:8px;padding:10px 12px}
+  .stat .v{font-size:20px;font-weight:800}
+  .stat .l{font-size:12px;color:var(--muted)}
+  .stat.yellow{border-left-color:var(--yellow)} .stat.clay{border-left-color:var(--clay)} .stat.grey{border-left-color:var(--grey)}
+  .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:8px}
+  table{border-collapse:collapse;width:100%;font-size:13.5px}
+  th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+  th{background:var(--dark);color:#fff;font-weight:600;position:sticky;top:0;white-space:nowrap}
+  td.num,th.num{text-align:right;white-space:nowrap}
+  tr.total td{font-weight:800;background:var(--air)}
+  tbody tr:nth-child(even) td{background:#FAFAFA}
+  .scroll{max-height:460px;overflow:auto}
+  .pill{display:inline-block;border-radius:10px;padding:1px 8px;font-size:12px;font-weight:700}
+  .pill.Dead{background:#F6DEDB;color:#8E3A33} .pill.Slow{background:#FFF4B3;color:#6B5A00}
+  .pill.Active{background:#E1EDE3;color:#2F5E39} .pill.None{background:#EEE;color:#555}
+  .notice{border-radius:8px;padding:10px 12px;font-size:14px;margin:10px 0}
+  .notice.warn{background:#FFF7CC;border:1px solid #E8CF3A}
+  .notice.err{background:#F9E3E1;border:1px solid var(--clay)}
+  .notice.ok{background:#E5F1E7;border:1px solid #9CC6A4}
+  .hidden{display:none !important}
+  details summary{cursor:pointer;font-weight:700}
+  select.cat{min-width:210px}
+  tr.changed td{background:#FFFBE0 !important}
+  footer{max-width:1100px;margin:0 auto;padding:8px 16px 30px;color:var(--muted);font-size:12px}
+  @media (max-width:600px){
+    main{padding:10px} .card{padding:12px} header h1{font-size:17px}
+    .btn{width:100%} .row > div{width:100%} input,select{width:100%}
+    select.cat{min-width:160px;width:auto}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <span class="badge">RES</span>
+    <div>
+      <h1>Stock Value Breakdown</h1>
+      <div class="sub">StockZure export &rarr; Exco breakdown workbook &middot; PTA warehouse</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="storageWarn" class="notice err hidden">This browser is blocking saved data (private window or site data blocked). The app will still work, but history and your category choices won't be remembered. Use a normal browser window.</div>
+
+  <!-- STEP 1 -->
+  <section class="card">
+    <h2><span class="step">1</span> Upload this week's StockZure export</h2>
+    <label class="drop" id="drop">
+      <input type="file" id="fileInput" accept=".xlsx">
+      <div><strong>Tap to choose the Excel file</strong> or drag it here</div>
+      <div class="muted">The .xlsx export from StockZure (or the PTA Current Stock workbook)</div>
+    </label>
+    <div class="row" style="margin-top:12px">
+      <div>
+        <label for="reportDate">Stock date</label>
+        <input type="date" id="reportDate">
+      </div>
+      <div class="muted" style="flex:1;min-width:200px" id="fileInfo">No file loaded yet.</div>
+    </div>
+    <div id="parseMsg"></div>
+  </section>
+
+  <!-- RESULTS -->
+  <div id="results" class="hidden">
+    <section class="card">
+      <h2><span class="step">2</span> Overview</h2>
+      <div class="stats" id="stats"></div>
+      <div id="reviewNotice"></div>
+    </section>
+
+    <section class="card">
+      <h2><span class="step">3</span> Check categories</h2>
+      <p class="muted" style="margin-top:0">Items the app couldn't place go to <strong>Needs Review</strong>. Pick a category and the app remembers it for every week after. You can also change any other item's category here.</p>
+      <div class="row" style="margin-bottom:10px">
+        <div>
+          <label for="reviewFilter">Show</label>
+          <select id="reviewFilter"></select>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <label for="reviewSearch">Search</label>
+          <input type="text" id="reviewSearch" placeholder="Barcode or description">
+        </div>
+      </div>
+      <div class="tablewrap scroll"><table id="reviewTable"></table></div>
+      <div class="muted" id="reviewCount" style="margin-top:6px"></div>
+    </section>
+
+    <section class="card">
+      <h2><span class="step">4</span> Breakdown by category</h2>
+      <div class="tablewrap"><table id="catTable"></table></div>
+    </section>
+
+    <section class="card">
+      <h2><span class="step">5</span> Dead &amp; slow stock</h2>
+      <div id="ageInfo" class="muted" style="margin-bottom:8px"></div>
+      <div class="stats" id="ageStats" style="margin-bottom:12px"></div>
+      <div class="tablewrap scroll"><table id="deadTable"></table></div>
+    </section>
+
+    <section class="card">
+      <h2><span class="step">6</span> Download the Exco workbook</h2>
+      <p class="muted" style="margin-top:0">Builds the Excel file (Summary, PTA Current Stock, a tab per category, PTA HIGH Value, Dead &amp; Slow Stock, Data Checks) and saves this week's stock to history.</p>
+      <button class="btn primary" id="btnGenerate">Download Exco Excel</button>
+      <div id="genMsg"></div>
+    </section>
+  </div>
+
+  <!-- HISTORY -->
+  <section class="card">
+    <h2>History</h2>
+    <p class="muted" style="margin-top:0">Every report you download saves that week's quantities here. Dead and slow stock is worked out by checking how long each item's quantity has stayed exactly the same. History lives in <strong>this browser on this device</strong>, so download a backup now and then.</p>
+    <div class="tablewrap"><table id="histTable"></table></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn ghost" id="btnBackup">Download backup</button>
+      <label class="btn ghost" style="display:inline-block;text-align:center">Restore backup<input type="file" id="restoreInput" accept=".json" class="hidden"></label>
+    </div>
+    <details style="margin-top:14px">
+      <summary>Add an older StockZure export to history</summary>
+      <div class="row" style="margin-top:10px">
+        <div><label for="oldDate">Date of that export</label><input type="date" id="oldDate"></div>
+        <div><label>Export file</label><input type="file" id="oldInput" accept=".xlsx"></div>
+      </div>
+      <div id="oldMsg"></div>
+    </details>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="card">
+    <details>
+      <summary>Settings</summary>
+      <div class="row" style="margin-top:12px">
+        <div><label for="setHigh">High value: unit price from (R)</label><input type="number" id="setHigh" min="0" step="100"></div>
+        <div><label for="setSlow">Slow: unchanged for (months)</label><input type="number" id="setSlow" min="1" step="1"></div>
+        <div><label for="setDead">Dead: unchanged for (months)</label><input type="number" id="setDead" min="1" step="1"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div style="flex:1;min-width:260px"><label for="setAddress">Warehouse address (report header)</label><input type="text" id="setAddress"></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn small" id="btnSaveSettings">Save settings</button>
+        <button class="btn small danger" id="btnResetCats">Clear my category choices</button>
+      </div>
+      <div id="setMsg"></div>
+    </details>
+  </section>
+</main>
+
+<footer>
+  This tool was developed with the assistance of an AI agent under the direction of qualified RES personnel.
+  Stock values are taken from StockZure purchase prices. Any write-down or disposal of stock should be signed off by Finance (CA(SA)).
+</footer>
+
+<script src="lib/exceljs.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
