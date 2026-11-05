@@ -33,9 +33,10 @@
   .btn.small{padding:6px 10px;font-size:13px}
   .btn.danger{background:#fff;color:var(--clay);border:1px solid var(--clay)}
   .btn:disabled{opacity:.45;cursor:not-allowed}
-  .drop{border:2px dashed var(--grey);border-radius:10px;padding:22px 14px;text-align:center;background:#FAFAFA;cursor:pointer}
+  .drop{display:block;border:2px dashed var(--grey);border-radius:10px;padding:22px 14px;text-align:center;background:#FAFAFA;cursor:pointer}
   .drop.over{border-color:var(--dark);background:#FFFBE0}
-  .drop input{display:none}
+  .drop input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  .drop{position:relative}
   .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
   .stat{background:#FAFAFA;border:1px solid var(--line);border-left:5px solid var(--blue);border-radius:8px;padding:10px 12px}
   .stat .v{font-size:20px;font-weight:800}
@@ -190,7 +191,11 @@
   Stock values are taken from StockZure purchase prices. Any write-down or disposal of stock should be signed off by Finance (CA(SA)).
 </footer>
 
-<script src="lib/exceljs.min.js"></script>
+<script src="exceljs.min.js"></script>
+<script>
+  // Backup: if exceljs.min.js is missing from the repo, load the same library from a public CDN.
+  if (!window.ExcelJS) document.write('<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"><\/script>');
+</script>
 <script src="app.js"></script>
 </body>
 </html>
