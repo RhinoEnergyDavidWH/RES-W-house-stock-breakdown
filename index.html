@@ -5,103 +5,248 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RES Stock Breakdown</title>
 <meta name="theme-color" content="#3F3F40">
+<link rel="icon" href="logo.png">
 <style>
   :root{
     --yellow:#FDDD00; --dark:#3F3F40; --grey:#9EA0A3; --air:#D6D6D6; --clay:#CC645C; --blue:#78A1BB;
-    --bg:#F4F4F4; --card:#FFFFFF; --text:#2B2B2C; --muted:#6B6D70; --line:#E2E2E2; --ok:#4E8A5B;
+    --bg:#F4F4F4; --card:#FFFFFF; --text:#2B2B2C; --muted:#6B6D70; --line:#E2E2E2;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.45}
-  header{background:var(--dark);color:#fff;padding:14px 16px;border-bottom:5px solid var(--yellow)}
-  header .wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  header h1{font-size:19px;margin:0;font-weight:700;letter-spacing:.3px}
-  header .sub{color:var(--air);font-size:13px}
-  .badge{background:var(--yellow);color:var(--dark);font-weight:700;border-radius:4px;padding:2px 8px;font-size:12px}
+  body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.45}
+  header{background:#fff;border-bottom:5px solid var(--yellow);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  header .wrap{max-width:1100px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  header img{height:56px;width:auto;display:block}
+  header h1{font-size:19px;margin:0;font-weight:800;letter-spacing:.4px;color:var(--dark);text-transform:uppercase}
+  header .sub{color:var(--muted);font-size:13px}
   main{max-width:1100px;margin:0 auto;padding:16px}
   .card{background:var(--card);border-radius:10px;padding:16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-  .card h2{font-size:17px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+  .card h2{font-size:17px;margin:0 0 10px;display:flex;align-items:center;gap:8px;color:var(--dark)}
+  .card h3{font-size:15px;margin:16px 0 8px;color:var(--dark)}
   .step{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--yellow);color:var(--dark);font-size:13px;font-weight:800;flex:none}
   .muted{color:var(--muted);font-size:13px}
   label{font-weight:600;font-size:14px}
   input[type=date],input[type=number],input[type=text],select{font:inherit;padding:8px 10px;border:1px solid #C9C9C9;border-radius:6px;background:#fff;max-width:100%}
   .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
   .row > div{display:flex;flex-direction:column;gap:4px}
-  .btn{font:inherit;font-weight:700;border:0;border-radius:8px;padding:11px 16px;cursor:pointer;background:var(--dark);color:#fff}
+  .btn{font:inherit;font-weight:700;border:0;border-radius:8px;padding:11px 16px;cursor:pointer;background:var(--dark);color:#fff;display:inline-block;text-align:center}
   .btn.primary{background:var(--yellow);color:var(--dark)}
   .btn.ghost{background:#fff;color:var(--dark);border:1px solid var(--dark)}
   .btn.small{padding:6px 10px;font-size:13px}
   .btn.danger{background:#fff;color:var(--clay);border:1px solid var(--clay)}
   .btn:disabled{opacity:.45;cursor:not-allowed}
-  .drop{display:block;border:2px dashed var(--grey);border-radius:10px;padding:22px 14px;text-align:center;background:#FAFAFA;cursor:pointer}
+  .drop{display:block;position:relative;border:2px dashed var(--grey);border-radius:10px;padding:20px 14px;text-align:center;background:#FAFAFA;cursor:pointer}
   .drop.over{border-color:var(--dark);background:#FFFBE0}
   .drop input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
-  .drop{position:relative}
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
   .stat{background:#FAFAFA;border:1px solid var(--line);border-left:5px solid var(--blue);border-radius:8px;padding:10px 12px}
-  .stat .v{font-size:20px;font-weight:800}
+  .stat .v{font-size:19px;font-weight:800}
   .stat .l{font-size:12px;color:var(--muted)}
-  .stat.yellow{border-left-color:var(--yellow)} .stat.clay{border-left-color:var(--clay)} .stat.grey{border-left-color:var(--grey)}
+  .stat .d{font-size:12px;font-weight:700}
+  .stat.yellow{border-left-color:var(--yellow)} .stat.clay{border-left-color:var(--clay)} .stat.grey{border-left-color:var(--grey)} .stat.dark{border-left-color:var(--dark)}
+  .up{color:#2F5E39} .down{color:#8E3A33}
   .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:8px}
   table{border-collapse:collapse;width:100%;font-size:13.5px}
   th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
-  th{background:var(--dark);color:#fff;font-weight:600;position:sticky;top:0;white-space:nowrap}
+  th{background:var(--dark);color:#fff;font-weight:600;position:sticky;top:0;white-space:nowrap;z-index:1}
   td.num,th.num{text-align:right;white-space:nowrap}
   tr.total td{font-weight:800;background:var(--air)}
+  tr.sub td{font-weight:700;background:#F0F0F0}
   tbody tr:nth-child(even) td{background:#FAFAFA}
   .scroll{max-height:460px;overflow:auto}
-  .pill{display:inline-block;border-radius:10px;padding:1px 8px;font-size:12px;font-weight:700}
+  .pill{display:inline-block;border-radius:10px;padding:1px 8px;font-size:12px;font-weight:700;white-space:nowrap}
   .pill.Dead{background:#F6DEDB;color:#8E3A33} .pill.Slow{background:#FFF4B3;color:#6B5A00}
-  .pill.Active{background:#E1EDE3;color:#2F5E39} .pill.None{background:#EEE;color:#555}
+  .pill.loc{background:#E6EEF3;color:#2E4F63}
   .notice{border-radius:8px;padding:10px 12px;font-size:14px;margin:10px 0}
   .notice.warn{background:#FFF7CC;border:1px solid #E8CF3A}
   .notice.err{background:#F9E3E1;border:1px solid var(--clay)}
   .notice.ok{background:#E5F1E7;border:1px solid #9CC6A4}
   .hidden{display:none !important}
   details summary{cursor:pointer;font-weight:700}
-  select.cat{min-width:210px}
+  select.cat{min-width:200px} select.mark{min-width:120px}
   tr.changed td{background:#FFFBE0 !important}
   footer{max-width:1100px;margin:0 auto;padding:8px 16px 30px;color:var(--muted);font-size:12px}
-  @media (max-width:600px){
-    main{padding:10px} .card{padding:12px} header h1{font-size:17px}
+  @media (max-width:700px){
+    main{padding:10px} .card{padding:12px} header img{height:44px} header h1{font-size:16px}
+    .grid2{grid-template-columns:1fr}
     .btn{width:100%} .row > div{width:100%} input,select{width:100%}
-    select.cat{min-width:160px;width:auto}
+    select.cat,select.mark{min-width:140px;width:auto}
   }
 </style>
 </head>
 <body>
+<script>
+/*!
+ * Rhino Loader (running rhino only) - Rhino Energy Solutions
+ *
+ * Shows a running Rhino Energy rhino (legs, tail and dust cloud animated)
+ * over the whole screen while the app is loading.
+ *
+ * USE:
+ *   RhinoLoader.show("Loading stock...");   // show the running rhino
+ *   RhinoLoader.hide();                     // hide it again
+ *   RhinoLoader.wrap(promise, "Saving...");  // show while a promise runs
+ *
+ * Self-contained: no libraries, no images, no other files. Everything sits in
+ * its own sealed "shadow" container so it cannot clash with the app's styles.
+ *
+ * Options (set BEFORE this code runs, in an earlier <script>):
+ *   window.RHINO_LOADER_AUTO = false;            do NOT show automatically while the page loads
+ *   window.RHINO_LOADER_RESPECT_MOTION = true;   keep the rhino still on computers that have
+ *                                                animations switched off (accessibility setting)
+ * (If loaded as a separate file, the attributes data-auto="false" and
+ *  data-respect-motion="true" on the script tag do the same.)
+ */
+(function () {
+  "use strict";
+  if (window.RhinoLoader) { return; }
+
+  var SETTINGS = {
+    defaultMessage: "Loading...",
+    minShowMs: 900,       // never flash: once shown, stay at least this long
+    runSpeed: "0.65s"     // smaller = faster running
+  };
+
+  var thisScript = document.currentScript;
+  var AUTO = !(thisScript && thisScript.getAttribute("data-auto") === "false") && window.RHINO_LOADER_AUTO !== false;
+  var RESPECT_MOTION = !!(thisScript && thisScript.getAttribute("data-respect-motion") === "true") || window.RHINO_LOADER_RESPECT_MOTION === true;
+
+  var RHINO_ART = "<g class=\"rf-dust-layer\"><circle class=\"rf-dust\" cx=\"196\" cy=\"288\" r=\"11\"></circle><circle class=\"rf-dust\" cx=\"214\" cy=\"294\" r=\"7\" style=\"animation-delay:-.38s\"></circle><circle class=\"rf-dust\" cx=\"180\" cy=\"284\" r=\"14\" style=\"animation-delay:-.72s\"></circle><circle class=\"rf-dust\" cx=\"392\" cy=\"292\" r=\"9\" style=\"animation-delay:-.55s\"></circle></g><g class=\"rf-rig\"><g class=\"rf-tail\"><path d=\"M151 145Q115 167 88 145Q68 128 51 139\" fill=\"none\" stroke=\"var(--rhl-body)\" stroke-width=\"9\" stroke-linecap=\"round\"></path><path class=\"rf-shade\" d=\"M58 132Q32 125 27 148Q43 140 60 144Z\"></path></g><g class=\"rf-leg rf-hind-far rf-shade\"><path d=\"M192 184Q221 170 244 201L230 235L254 270Q263 282 250 286L219 285L203 251L187 225Z\"></path><path d=\"M198 196Q219 185 234 205L224 231L206 234L196 214Z\" opacity=\".45\"></path></g><g class=\"rf-leg rf-fore-far rf-shade\"><path d=\"M372 174L420 181L416 225L443 256L442 279L412 280L405 262L374 232Z\"></path><path d=\"M382 188L410 192L407 222L389 224L378 200Z\" opacity=\".45\"></path></g><g class=\"rf-body\"><path d=\"M132 170Q126 130 164 112Q192 94 230 108L275 118Q308 116 333 96Q363 78 391 99Q421 101 439 139L430 196Q408 224 362 232Q301 249 246 233Q218 225 189 227Q151 217 136 197Z\"></path><path class=\"rf-light\" d=\"M146 153Q154 113 198 116Q226 114 263 131Q309 138 337 108Q360 91 380 105Q349 109 336 141Q281 162 221 137Q177 126 146 153Z\"></path><path class=\"rf-shade\" d=\"M140 188Q188 214 231 211Q296 240 356 220Q395 206 429 178L430 196Q408 224 362 232Q301 249 246 233Q218 225 189 227Q151 217 140 188Z\"></path></g><g class=\"rf-leg rf-hind-near\"><path class=\"rf-body\" d=\"M191 164Q226 153 240 183Q251 205 228 230L210 247L190 281Q184 289 168 286L148 281Q145 273 154 265L179 228L177 203Q172 178 191 164Z\"></path><path class=\"rf-light\" d=\"M190 178Q214 161 228 183Q234 200 214 220L197 243L181 263L172 261L194 223Q205 207 191 178Z\"></path><path class=\"rf-shade\" d=\"M154 267L185 275L183 286L151 283Q144 278 154 267Z\"></path><path class=\"rf-fold\" d=\"M160 272L156 280M170 275L168 283\"></path></g><g class=\"rf-leg rf-fore-near\"><path class=\"rf-body\" d=\"M364 160Q391 151 413 172Q429 194 411 216L405 233L427 266Q437 277 426 286L395 288Q385 280 383 267L365 233L352 205Q343 181 364 160Z\"></path><path class=\"rf-light\" d=\"M367 172Q389 158 403 178Q413 194 395 212L390 235L412 267L400 271L377 230L368 207Q359 187 367 172Z\"></path><path class=\"rf-shade\" d=\"M393 274L431 273Q436 282 426 286L395 288Z\"></path><path class=\"rf-fold\" d=\"M404 277L405 285M417 277L419 284\"></path></g><g class=\"rf-head\"><path class=\"rf-body\" d=\"M390 112Q424 103 445 131L471 151L501 163L531 166Q549 173 543 193Q538 214 512 221L479 216L451 202Q423 204 406 187L391 158Z\"></path><path class=\"rf-light\" d=\"M418 117Q437 120 450 145L476 162L523 176L534 188Q513 185 489 191L457 179Q436 150 416 145Z\"></path><path class=\"rf-shade\" d=\"M417 169Q439 191 457 189L485 201Q517 214 542 191Q540 215 512 221L479 216L451 202Q427 204 414 187Z\"></path><g fill=\"var(--rhl-horn)\"><path d=\"M503 172Q531 156 546 111Q550 153 534 181Z\"></path><path d=\"M477 160Q489 150 493 133Q500 152 494 169Z\"></path></g><g class=\"rf-ears\"><path class=\"rf-body\" d=\"M405 130Q380 110 389 78Q416 86 421 120Z\"></path><path class=\"rf-shade\" d=\"M407 116Q395 102 396 89Q411 95 414 113Z\"></path><path class=\"rf-body\" d=\"M430 126Q433 96 455 89Q460 113 443 133Z\"></path><path class=\"rf-shade\" d=\"M439 119L449 100Q452 113 443 124Z\"></path></g><path class=\"rf-fold\" d=\"M417 146Q428 139 439 147M412 149Q406 166 416 182M446 164Q451 180 463 183M493 207Q514 216 533 202\"></path><ellipse cx=\"433\" cy=\"152\" rx=\"4.5\" ry=\"3.5\" fill=\"#F4F4F3\"></ellipse><circle cx=\"434\" cy=\"151\" r=\"1.4\" fill=\"#171718\"></circle><path d=\"M523 187Q535 184 533 193Q527 198 523 192Z\" fill=\"#171718\"></path></g><g class=\"rf-fold\"><path d=\"M347 118Q328 160 345 196M339 139Q330 165 338 181M245 147Q234 169 244 190M155 165Q152 180 160 187\"></path></g></g>";
+
+  var CSS = [
+    ":host{all:initial}",
+    ".overlay{position:fixed;top:0;right:0;bottom:0;left:0;z-index:2147483000;display:flex;flex-direction:column;background:#F4F3F0;color:#3F3F40;",
+    "font-family:'Barlow Condensed','Barlow',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s}",
+    ".overlay.on{opacity:1;visibility:visible}",
+    ".bar{flex:none;height:4px;background:#FDDD00}",
+    ".stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:32px;text-align:center}",
+    ".rhino{width:min(300px,80vw);aspect-ratio:675/255}",
+    ".rhino svg{width:100%;height:100%;display:block}",
+    ".msg{font-weight:700;font-size:20px;letter-spacing:.5px;text-transform:uppercase}",
+    ".rf-body{fill:var(--rhl-body)}.rf-light{fill:var(--rhl-light)}.rf-shade{fill:var(--rhl-shadow)}",
+    ".rf-fold{fill:none;stroke:var(--rhl-shadow);stroke-width:3;stroke-linecap:round}",
+    ".rf-dust{fill:#B0A998;opacity:0;transform-box:fill-box;transform-origin:center;animation:rf-puff 1.1s ease-out infinite}",
+    ".rf-rig{animation:rf-bounce var(--rhl-speed) ease-in-out infinite}",
+    ".rf-leg{animation:rf-stride var(--rhl-speed) ease-in-out infinite alternate}",
+    ".rf-hind-far{transform-origin:215px 203px;animation-delay:-.325s}",
+    ".rf-fore-far{transform-origin:397px 202px}",
+    ".rf-hind-near{transform-origin:213px 200px}",
+    ".rf-fore-near{transform-origin:391px 195px;animation-delay:-.325s}",
+    ".rf-tail{transform-origin:145px 146px;animation:rf-tail var(--rhl-speed) ease-in-out infinite alternate}",
+    "@keyframes rf-stride{from{transform:rotate(-18deg)}to{transform:rotate(20deg)}}",
+    "@keyframes rf-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}",
+    "@keyframes rf-tail{from{transform:rotate(-8deg)}to{transform:rotate(8deg)}}",
+    "@keyframes rf-puff{0%{opacity:0;transform:translate(0,0) scale(.35)}20%{opacity:.9}100%{opacity:0;transform:translate(-50px,-10px) scale(2)}}",
+    "@media (prefers-reduced-motion:reduce){.rf-dust,.rf-rig,.rf-leg,.rf-tail{animation:none}.rf-dust{opacity:0}.overlay{transition:none}}"
+  ].join("");
+  if (!RESPECT_MOTION) { CSS = CSS.split("@media (prefers-reduced-motion")[0]; }
+
+  var host, overlay, msgEl, built = false, shownAt = 0, hideTimer = null;
+
+  function build() {
+    if (built) { return true; }
+    if (!document.body) { return false; }
+    host = document.createElement("div");
+    host.id = "rhino-loader-host";
+    var root = host.attachShadow ? host.attachShadow({ mode: "open" }) : host;
+    root.innerHTML =
+      "<style>" + CSS + "</style>" +
+      '<div class="overlay" role="status" aria-live="polite" aria-hidden="true" ' +
+      'style="--rhl-body:#9EA0A3;--rhl-light:#C4C5C7;--rhl-shadow:#6B6B6D;--rhl-horn:#FDDD00;--rhl-speed:' + SETTINGS.runSpeed + '">' +
+      '<div class="bar"></div><div class="stage">' +
+      '<div class="rhino"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-110 55 675 255" role="img" aria-label="Running rhino">' + RHINO_ART + "</svg></div>" +
+      '<div class="msg"></div>' +
+      "</div></div>";
+    document.body.appendChild(host);
+    overlay = root.querySelector(".overlay");
+    msgEl = root.querySelector(".msg");
+    built = true;
+    return true;
+  }
+
+  function show(message) {
+    if (!build()) {
+      document.addEventListener("DOMContentLoaded", function () { show(message); });
+      return;
+    }
+    clearTimeout(hideTimer);
+    msgEl.textContent = message || SETTINGS.defaultMessage;
+    if (!overlay.classList.contains("on")) {
+      shownAt = Date.now();
+      overlay.classList.add("on");
+      overlay.setAttribute("aria-hidden", "false");
+    }
+  }
+
+  function hide() {
+    if (!built) { return; }
+    var wait = Math.max(0, SETTINGS.minShowMs - (Date.now() - shownAt));
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(function () {
+      overlay.classList.remove("on");
+      overlay.setAttribute("aria-hidden", "true");
+    }, wait);
+  }
+
+  function wrap(promise, message) {
+    show(message);
+    var done = function () { hide(); };
+    promise.then(done, done);
+    return promise;
+  }
+
+  window.RhinoLoader = { show: show, hide: hide, wrap: wrap };
+
+  if (AUTO) {
+    show();
+    if (document.readyState === "complete") { hide(); }
+    else { window.addEventListener("load", hide); }
+  }
+})();
+</script>
 <header>
   <div class="wrap">
-    <span class="badge">RES</span>
+    <img src="logo.png" alt="Rhino Energy">
     <div>
       <h1>Stock Value Breakdown</h1>
-      <div class="sub">StockZure export &rarr; Exco breakdown workbook &middot; PTA warehouse</div>
+      <div class="sub">StockZure export &#8594; Exco breakdown &#183; audit pack &#183; spot checks</div>
     </div>
   </div>
 </header>
 
 <main>
-  <div id="storageWarn" class="notice err hidden">This browser is blocking saved data (private window or site data blocked). The app will still work, but history and your category choices won't be remembered. Use a normal browser window.</div>
+  <div id="storageWarn" class="notice err hidden">This browser is blocking saved data (private window or site data blocked). The app still works, but history and your choices won't be remembered. Use a normal browser window.</div>
 
-  <!-- STEP 1 -->
   <section class="card">
-    <h2><span class="step">1</span> Upload this week's StockZure export</h2>
-    <label class="drop" id="drop">
-      <input type="file" id="fileInput" accept=".xlsx">
-      <div><strong>Tap to choose the Excel file</strong> or drag it here</div>
-      <div class="muted">The .xlsx export from StockZure (or the PTA Current Stock workbook)</div>
-    </label>
-    <div class="row" style="margin-top:12px">
+    <h2><span class="step">1</span> Upload files</h2>
+    <div class="grid2">
       <div>
-        <label for="reportDate">Stock date</label>
-        <input type="date" id="reportDate">
+        <label>This week's StockZure stock list</label>
+        <label class="drop" id="drop">
+          <input type="file" id="fileInput" accept=".xlsx">
+          <div><strong>Tap to choose the stock list</strong> or drag it here</div>
+          <div class="muted">.xlsx export from StockZure</div>
+        </label>
+        <div class="row" style="margin-top:10px">
+          <div><label for="reportDate">Stock date</label><input type="date" id="reportDate"></div>
+          <div class="muted" style="flex:1;min-width:160px" id="fileInfo">No stock list loaded yet.</div>
+        </div>
+        <div id="parseMsg"></div>
       </div>
-      <div class="muted" style="flex:1;min-width:200px" id="fileInfo">No file loaded yet.</div>
+      <div>
+        <label>StockZure stock movement report <span class="muted">(for dead stock and audits)</span></label>
+        <label class="drop" id="dropMov">
+          <input type="file" id="movInput" accept=".xlsx">
+          <div><strong>Tap to choose the movement report</strong> or drag it here</div>
+          <div class="muted">e.g. Stock_Movement_20251109_To_20261109.xlsx</div>
+        </label>
+        <div class="muted" id="movInfo" style="margin-top:10px"></div>
+        <div id="movMsg"></div>
+      </div>
     </div>
-    <div id="parseMsg"></div>
   </section>
 
-  <!-- RESULTS -->
   <div id="results" class="hidden">
     <section class="card">
       <h2><span class="step">2</span> Overview</h2>
@@ -110,24 +255,20 @@
     </section>
 
     <section class="card">
-      <h2><span class="step">3</span> Check categories</h2>
-      <p class="muted" style="margin-top:0">Items the app couldn't place go to <strong>Needs Review</strong>. Pick a category and the app remembers it for every week after. You can also change any other item's category here.</p>
+      <h2><span class="step">3</span> Check categories, Attic and Redundant</h2>
+      <p class="muted" style="margin-top:0">Items the app couldn't place show under <strong>Needs Review</strong>. Use <strong>List</strong> to move an item to Attic Stock (spares kept for past projects) or Redundant Stock (to dispose of). The app remembers your choices every week.</p>
       <div class="row" style="margin-bottom:10px">
-        <div>
-          <label for="reviewFilter">Show</label>
-          <select id="reviewFilter"></select>
-        </div>
-        <div style="flex:1;min-width:200px">
-          <label for="reviewSearch">Search</label>
-          <input type="text" id="reviewSearch" placeholder="Barcode or description">
-        </div>
+        <div><label for="reviewFilter">Show</label><select id="reviewFilter"></select></div>
+        <div style="flex:1;min-width:200px"><label for="reviewSearch">Search</label><input type="text" id="reviewSearch" placeholder="Barcode or description"></div>
       </div>
       <div class="tablewrap scroll"><table id="reviewTable"></table></div>
       <div class="muted" id="reviewCount" style="margin-top:6px"></div>
     </section>
 
     <section class="card">
-      <h2><span class="step">4</span> Breakdown by category</h2>
+      <h2><span class="step">4</span> Breakdown</h2>
+      <div class="tablewrap"><table id="secTable"></table></div>
+      <h3>By category</h3>
       <div class="tablewrap"><table id="catTable"></table></div>
     </section>
 
@@ -140,23 +281,53 @@
 
     <section class="card">
       <h2><span class="step">6</span> Download the Exco workbook</h2>
-      <p class="muted" style="margin-top:0">Builds the Excel file (Summary, PTA Current Stock, a tab per category, PTA HIGH Value, Dead &amp; Slow Stock, Data Checks) and saves this week's stock to history.</p>
+      <p class="muted" style="margin-top:0">SUMMARY, PTA Current Stock, General, Small Stock-Consumables, O&amp;M, PTA HIGH Value, the Cape Town tabs, Attic, Redundant, Dead &amp; Slow Stock and Data Checks. Downloading also saves this week to history.</p>
       <button class="btn primary" id="btnGenerate">Download Exco Excel</button>
       <div id="genMsg"></div>
     </section>
+
+    <section class="card">
+      <h2><span class="step">7</span> Audit tools</h2>
+      <div class="row">
+        <div><label for="audFrom">Audit period from</label><input type="date" id="audFrom"></div>
+        <div><label for="audTo">to</label><input type="date" id="audTo"></div>
+      </div>
+      <h3>Audit pack</h3>
+      <p class="muted" style="margin-top:0">Movement Register, Adjustments Register, Dead &amp; Slow Stock and Stock on Hand for the period. Needs the movement report from step 1.</p>
+      <button class="btn" id="btnAudit">Download audit pack</button>
+      <div id="audMsg"></div>
+
+      <h3>Item history</h3>
+      <div class="row">
+        <div style="flex:1;min-width:220px"><label for="histSearch">Barcode or description</label><input type="text" id="histSearch" placeholder="e.g. Lug 185 x 12"></div>
+        <div><button class="btn ghost" id="btnHistDl" disabled>Download item history</button></div>
+      </div>
+      <div id="histPick" style="margin-top:8px"></div>
+      <div class="tablewrap scroll" style="margin-top:8px"><table id="itemHistTable"></table></div>
+
+      <h3>Random spot check</h3>
+      <div class="row">
+        <div><label for="spotLoc">Location</label><select id="spotLoc"><option value="PTA">PTA (incl. O&amp;M)</option><option value="CPT">Cape Town</option><option value="ALL">All locations</option></select></div>
+        <div><label for="spotN">Number of items</label><input type="number" id="spotN" min="1" max="50" value="10"></div>
+        <div><button class="btn" id="btnSpot">Pick random items</button></div>
+        <div><button class="btn ghost" id="btnSpotDl" disabled>Download count sheet</button></div>
+      </div>
+      <div id="spotInfo" class="muted" style="margin-top:8px"></div>
+      <div class="tablewrap" style="margin-top:8px"><table id="spotTable"></table></div>
+      <details style="margin-top:10px"><summary>Spot check log</summary><div class="tablewrap" style="margin-top:8px"><table id="spotLog"></table></div></details>
+    </section>
   </div>
 
-  <!-- HISTORY -->
   <section class="card">
     <h2>History</h2>
-    <p class="muted" style="margin-top:0">Every report you download saves that week's quantities here. Dead and slow stock is worked out by checking how long each item's quantity has stayed exactly the same. History lives in <strong>this browser on this device</strong>, so download a backup now and then.</p>
+    <p class="muted" style="margin-top:0">Each Exco download saves that week's quantities and totals here (used for "difference from last week" and as a back-up for dead stock). History lives in <strong>this browser on this device</strong>, so download a backup now and then.</p>
     <div class="tablewrap"><table id="histTable"></table></div>
     <div class="row" style="margin-top:12px">
       <button class="btn ghost" id="btnBackup">Download backup</button>
-      <label class="btn ghost" style="display:inline-block;text-align:center">Restore backup<input type="file" id="restoreInput" accept=".json" class="hidden"></label>
+      <label class="btn ghost">Restore backup<input type="file" id="restoreInput" accept=".json" class="hidden"></label>
     </div>
     <details style="margin-top:14px">
-      <summary>Add an older StockZure export to history</summary>
+      <summary>Add an older StockZure stock list to history</summary>
       <div class="row" style="margin-top:10px">
         <div><label for="oldDate">Date of that export</label><input type="date" id="oldDate"></div>
         <div><label>Export file</label><input type="file" id="oldInput" accept=".xlsx"></div>
@@ -165,21 +336,26 @@
     </details>
   </section>
 
-  <!-- SETTINGS -->
   <section class="card">
     <details>
       <summary>Settings</summary>
       <div class="row" style="margin-top:12px">
-        <div><label for="setHigh">High value: unit price from (R)</label><input type="number" id="setHigh" min="0" step="100"></div>
-        <div><label for="setSlow">Slow: unchanged for (months)</label><input type="number" id="setSlow" min="1" step="1"></div>
-        <div><label for="setDead">Dead: unchanged for (months)</label><input type="number" id="setDead" min="1" step="1"></div>
+        <div><label for="setHigh">High value: line total from (R)</label><input type="number" id="setHigh" min="0" step="500"></div>
+        <div><label for="setSlow">Slow: no movement for (months)</label><input type="number" id="setSlow" min="1" step="1"></div>
+        <div><label for="setDead">Dead: no movement for (months)</label><input type="number" id="setDead" min="1" step="1"></div>
       </div>
       <div class="row" style="margin-top:10px">
-        <div style="flex:1;min-width:260px"><label for="setAddress">Warehouse address (report header)</label><input type="text" id="setAddress"></div>
+        <div><label for="setAudFrom">Default audit period from</label><input type="date" id="setAudFrom"></div>
+        <div><label for="setAudTo">to</label><input type="date" id="setAudTo"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div style="flex:1;min-width:260px"><label for="setAddress">PTA warehouse address</label><input type="text" id="setAddress"></div>
+        <div style="flex:1;min-width:260px"><label for="setCptAddress">Cape Town address</label><input type="text" id="setCptAddress"></div>
       </div>
       <div class="row" style="margin-top:12px">
         <button class="btn small" id="btnSaveSettings">Save settings</button>
         <button class="btn small danger" id="btnResetCats">Clear my category choices</button>
+        <button class="btn small danger" id="btnResetMarks">Clear Attic / Redundant marks</button>
       </div>
       <div id="setMsg"></div>
     </details>
@@ -188,12 +364,11 @@
 
 <footer>
   This tool was developed with the assistance of an AI agent under the direction of qualified RES personnel.
-  Stock values are taken from StockZure purchase prices. Any write-down or disposal of stock should be signed off by Finance (CA(SA)).
+  Stock values use StockZure purchase prices. Any write-down or disposal of stock must be signed off by Finance (CA(SA)).
 </footer>
 
 <script src="exceljs.min.js"></script>
 <script>
-  // Backup: if exceljs.min.js is missing from the repo, load the same library from a public CDN.
   if (!window.ExcelJS) document.write('<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"><\/script>');
 </script>
 <script src="app.js"></script>
