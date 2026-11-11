@@ -255,7 +255,34 @@
   }
 
   // ------------------------------------------------------------------ read Excel
-  function loadWorkbook(buffer) {
+  var EXCEL_EXT = /\.(xlsx|xlsb)$/i;
+  // .xlsb (Excel binary) is read with SheetJS and wrapped so it looks like an ExcelJS workbook.
+  function xlsbWorkbook(buffer) {
+    if (typeof XLSX === 'undefined') throw new Error('The .xlsb reader did not load. Check that xlsx.full.min.js is in the main folder of the GitHub repo, then refresh the page.');
+    var book = XLSX.read(new Uint8Array(buffer), { type: 'array', cellDates: false, cellFormula: false, cellHTML: false, cellStyles: false });
+    var worksheets = book.SheetNames.map(function (name) {
+      var aoa = null;
+      function data() {
+        if (!aoa) aoa = XLSX.utils.sheet_to_json(book.Sheets[name], { header: 1, raw: true, defval: null, blankrows: true });
+        return aoa;
+      }
+      function rowObj(r) {
+        var arr = data()[r - 1] || [];
+        return {
+          getCell: function (c) { var v = arr[c - 1]; return { value: v === undefined ? null : v }; },
+          eachCell: function (opts, fn) {
+            for (var c = 0; c < arr.length; c++) if (arr[c] != null && arr[c] !== '') fn({ value: arr[c] }, c + 1);
+          }
+        };
+      }
+      var ws = { name: name, getRow: rowObj };
+      Object.defineProperty(ws, 'rowCount', { get: function () { return data().length; } });
+      return ws;
+    });
+    return { worksheets: worksheets };
+  }
+  function loadWorkbook(buffer, fileName) {
+    if (/\.xlsb$/i.test(fileName || '')) return Promise.resolve().then(function () { return xlsbWorkbook(buffer); });
     if (typeof ExcelJS === 'undefined') throw new Error('The Excel library did not load. Check that exceljs.min.js is in the main folder of the GitHub repo, then refresh the page.');
     var wb = new ExcelJS.Workbook();
     return wb.xlsx.load(buffer).then(function () { return wb; });
@@ -283,8 +310,8 @@
     }
     return null;
   }
-  function readStockList(buffer) {
-    return loadWorkbook(buffer).then(function (wb) {
+  function readStockList(buffer, fileName) {
+    return loadWorkbook(buffer, fileName).then(function (wb) {
       var sheets = wb.worksheets.filter(Boolean).sort(function (a, b) {
         function score(ws) { var n = ws.name.toLowerCase(); return n === 'data' || n.indexOf('pta current') > -1 ? 0 : (n.indexOf('current') > -1 ? 1 : 5); }
         return score(a) - score(b);
@@ -316,8 +343,8 @@
       throw new Error('Could not find the stock table. It needs headings for Barcode, Description and Qty In Stock. (Is this the movement report? Use the box on the right for that.)');
     });
   }
-  function readMovement(buffer) {
-    return loadWorkbook(buffer).then(function (wb) {
+  function readMovement(buffer, fileName) {
+    return loadWorkbook(buffer, fileName).then(function (wb) {
       var wss = wb.worksheets.filter(Boolean);
       for (var i = 0; i < wss.length; i++) {
         var ws = wss[i];
@@ -1245,10 +1272,10 @@
   }
   function handleFile(file) {
     if (!file) return;
-    if (!/\.xlsx$/i.test(file.name)) { notice($('parseMsg'), 'err', 'Please choose an .xlsx Excel file.'); return; }
+    if (!EXCEL_EXT.test(file.name)) { notice($('parseMsg'), 'err', 'Please choose an Excel file (.xlsx or .xlsb).'); return; }
     notice($('parseMsg'), 'warn', 'Reading ' + esc(file.name) + '...');
     loaderShow('Reading stock list...');
-    file.arrayBuffer().then(readStockList).then(function (res) {
+    file.arrayBuffer().then(function (buf) { return readStockList(buf, file.name); }).then(function (res) {
       var d = dateFromName(file.name) || todayISO();
       $('reportDate').value = d;
       current = { fileName: file.name, date: d, items: res.items };
@@ -1264,9 +1291,9 @@
   }
   function handleMovement(file) {
     if (!file) return;
-    if (!/\.xlsx$/i.test(file.name)) { notice($('movMsg'), 'err', 'Please choose an .xlsx Excel file.'); return; }
+    if (!EXCEL_EXT.test(file.name)) { notice($('movMsg'), 'err', 'Please choose an Excel file (.xlsx or .xlsb).'); return; }
     loaderShow('Reading movement report...');
-    file.arrayBuffer().then(readMovement).then(function (rows) {
+    file.arrayBuffer().then(function (buf) { return readMovement(buf, file.name); }).then(function (rows) {
       movRows = rows;
       var p = movementPeriod(rows, file.name), last = {};
       rows.forEach(function (r) { if (isMove(r) && r.k && r.date) { var d = r.date.slice(0, 10); if (!last[r.k] || d > last[r.k]) last[r.k] = d; } });
@@ -1319,7 +1346,7 @@
     var d = $('oldDate').value || dateFromName(file.name);
     if (!d) { notice($('oldMsg'), 'err', 'Choose the date of that export first.'); $('oldInput').value = ''; return; }
     loaderShow('Adding to history...');
-    file.arrayBuffer().then(readStockList).then(function (res) {
+    file.arrayBuffer().then(function (buf) { return readStockList(buf, file.name); }).then(function (res) {
       categorise(res.items);
       if (state.history.some(function (s) { return s.date === d; }) && !window.confirm('There is already a stock list for ' + fmtDate(d) + ' in history. Replace it?')) { $('oldMsg').innerHTML = ''; return; }
       putSnapshot(snapshotFrom(res.items, d, 'Older export: ' + file.name));
