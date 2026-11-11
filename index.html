@@ -224,9 +224,9 @@
       <div>
         <label>This week's StockZure stock list</label>
         <label class="drop" id="drop">
-          <input type="file" id="fileInput" accept=".xlsx">
+          <input type="file" id="fileInput" accept=".xlsx,.xlsb">
           <div><strong>Tap to choose the stock list</strong> or drag it here</div>
-          <div class="muted">.xlsx export from StockZure</div>
+          <div class="muted">.xlsx or .xlsb (StockZure export or stock take workbook)</div>
         </label>
         <div class="row" style="margin-top:10px">
           <div><label for="reportDate">Stock date</label><input type="date" id="reportDate"></div>
@@ -237,7 +237,7 @@
       <div>
         <label>StockZure stock movement report <span class="muted">(for dead stock and audits)</span></label>
         <label class="drop" id="dropMov">
-          <input type="file" id="movInput" accept=".xlsx">
+          <input type="file" id="movInput" accept=".xlsx,.xlsb">
           <div><strong>Tap to choose the movement report</strong> or drag it here</div>
           <div class="muted">e.g. Stock_Movement_20251109_To_20261109.xlsx</div>
         </label>
@@ -330,7 +330,7 @@
       <summary>Add an older StockZure stock list to history</summary>
       <div class="row" style="margin-top:10px">
         <div><label for="oldDate">Date of that export</label><input type="date" id="oldDate"></div>
-        <div><label>Export file</label><input type="file" id="oldInput" accept=".xlsx"></div>
+        <div><label>Export file</label><input type="file" id="oldInput" accept=".xlsx,.xlsb"></div>
       </div>
       <div id="oldMsg"></div>
     </details>
@@ -368,8 +368,10 @@
 </footer>
 
 <script src="exceljs.min.js"></script>
+<script src="xlsx.full.min.js"></script>
 <script>
   if (!window.ExcelJS) document.write('<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"><\/script>');
+  if (!window.XLSX) document.write('<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"><\/script>');
 </script>
 <script src="app.js"></script>
 </body>
