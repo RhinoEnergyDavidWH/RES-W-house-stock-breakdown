@@ -642,12 +642,23 @@
     });
   }
   function renderDead() {
-    var S = state.settings, mv = state.movement, parts = [];
-    if (mv) parts.push('Movement report: ' + fmtDate(mv.from) + ' to ' + fmtDate(mv.to) + ' (' + esc(mv.file) + ').');
-    if (A.prior.length) parts.push('Saved stock lists back to ' + fmtDate(A.prior[A.prior.length - 1].date) + '.');
-    if (!parts.length) parts.push('No movement report or earlier stock lists yet, so stock age can\'t be worked out.');
-    parts.push('<strong>Slow</strong> = no movement for ' + S.slowMonths + '-' + S.deadMonths + ' months. <strong>Dead</strong> = no movement for ' + S.deadMonths + '+ months. Items marked Attic/Redundant are left out.');
-    $('ageInfo').innerHTML = parts.join(' ');
+    var S = state.settings, mv = state.movement, html = '';
+    var later = state.history.filter(function (s) { return s.date > current.date; });
+    var src = '<strong>Comparing stock date ' + fmtDate(current.date) + ' with:</strong><ul style="margin:6px 0 6px 18px;padding:0">';
+    src += '<li>Movement report: ' + (mv ? fmtDate(mv.from) + ' to ' + fmtDate(mv.to) + ' (' + esc(mv.file) + ')' : '<strong>none loaded</strong>') + '</li>';
+    if (A.prior.length) {
+      var ds = A.prior.slice().reverse().map(function (s) { return fmtDate(s.date); });
+      src += '<li>' + A.prior.length + ' saved stock list(s) from before this date: ' + (ds.length > 8 ? ds.slice(0, 4).join(', ') + ' ... ' + ds.slice(-3).join(', ') : ds.join(', ')) + '</li>';
+    } else src += '<li>Saved stock lists from before this date: <strong>none</strong></li>';
+    src += '</ul>';
+    if (!mv && !A.prior.length) {
+      html += '<div class="notice err"><strong>Nothing to compare with, so no dead or slow stock can be shown.</strong><br>' +
+        'Either load the StockZure movement report in step 1, or add older stock lists under <strong>History &#8594; Add an older StockZure stock list</strong> (choose the correct date for each), then come back here.</div>';
+    }
+    if (current && !current.dateConfirmed) html += '<div class="notice warn">The stock date has not been chosen yet (step 1). Stock age is worked out from that date.</div>';
+    if (later.length) html += '<div class="notice warn">' + later.length + ' saved stock list(s) are dated <strong>after</strong> ' + fmtDate(current.date) + ' (' + later.map(function (s) { return fmtDate(s.date); }).join(', ') + ') and are not used. If one of them is really an older list, remove it under History and add it again with the right date.</div>';
+    src += '<span class="muted"><strong>Slow</strong> = no movement for ' + S.slowMonths + '-' + S.deadMonths + ' months. <strong>Dead</strong> = no movement for ' + S.deadMonths + '+ months. Items marked Attic/Redundant are left out.</span>';
+    $('ageInfo').innerHTML = html + src;
     $('ageStats').innerHTML = stat(fmtR(sumTotal(A.dead)), 'Dead: ' + A.dead.length + ' lines', 'clay') +
       stat(fmtR(sumTotal(A.slow)), 'Slow: ' + A.slow.length + ' lines', 'yellow');
     var list = deadSlowSorted();
@@ -1276,12 +1287,13 @@
     notice($('parseMsg'), 'warn', 'Reading ' + esc(file.name) + '...');
     loaderShow('Reading stock list...');
     file.arrayBuffer().then(function (buf) { return readStockList(buf, file.name); }).then(function (res) {
-      var d = dateFromName(file.name) || todayISO();
-      $('reportDate').value = d;
-      current = { fileName: file.name, date: d, items: res.items };
+      var dn = dateFromName(file.name);
+      current = { fileName: file.name, date: dn || todayISO(), items: res.items, dateConfirmed: !!dn };
+      $('reportDate').value = dn || '';
       $('fileInfo').innerHTML = '<strong>' + esc(file.name) + '</strong><br>Sheet "' + esc(res.sheet) + '" - ' + res.items.length + ' lines' +
-        (dateFromName(file.name) ? '' : '<br>Date not in file name - check the stock date.');
-      $('parseMsg').innerHTML = ''; $('genMsg').innerHTML = ''; $('spotTable').innerHTML = ''; $('spotInfo').innerHTML = '';
+        (dn ? '<br>Stock date taken from the file name: ' + fmtDate(dn) : '');
+      $('parseMsg').innerHTML = ''; $('genMsg').innerHTML = '';
+      setDateWarning(); $('spotTable').innerHTML = ''; $('spotInfo').innerHTML = '';
       $('btnSpotDl').disabled = true; spot = null;
       renderReviewFilter(); renderAll(); renderSpotLog();
       show($('results'));
@@ -1306,14 +1318,42 @@
       notice($('movMsg'), 'err', 'Could not read this file: ' + esc(e.message || e));
     }).then(loaderHide, loaderHide);
   }
+  function setDateWarning() {
+    var need = current && !current.dateConfirmed;
+    $('reportDate').classList.toggle('needdate', !!need);
+    $('dateMsg').innerHTML = need ? '<div class="notice err"><strong>Choose the stock date.</strong> This file name has no date in it. Pick the date the stock list was exported. Stock age, history and "difference from last week" all depend on it. Nothing can be saved until you do.</div>' : '';
+  }
+  // Checks before saving this stock list to history. Returns true if OK to save.
+  function okToSave() {
+    if (!current) return false;
+    if (!current.dateConfirmed) {
+      setDateWarning();
+      $('reportDate').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('reportDate').focus();
+      return false;
+    }
+    if (current.date > todayISO() && !window.confirm('The stock date ' + fmtDate(current.date) + ' is in the future. Save it anyway?')) return false;
+    if (state.history.some(function (s) { return s.date === current.date; }) &&
+      !window.confirm('History already has a stock list for ' + fmtDate(current.date) + '. Replace it with "' + current.fileName + '"?')) return false;
+    return true;
+  }
+  function saveToHistory(source) {
+    putSnapshot(snapshotFrom(current.items, current.date, source + ': ' + current.fileName, A.t));
+    renderAll();
+  }
+  function saveHistoryOnly() {
+    if (!okToSave()) { if (current && !current.dateConfirmed) notice($('genMsg'), 'err', 'Choose the stock date in step 1 first.'); return; }
+    renderAll();
+    saveToHistory('Saved stock list');
+    notice($('genMsg'), 'ok', 'Saved the stock list for ' + fmtDate(current.date) + ' to history.' + (state.storageOK ? '' : ' <strong>Warning:</strong> history could not be saved in this browser.'));
+  }
   function generateExco() {
     if (!current) return;
+    if (!okToSave()) { if (!current.dateConfirmed) notice($('genMsg'), 'err', 'Choose the stock date in step 1 first.'); return; }
     runBusy($('btnGenerate'), 'Building...', 'Building Exco workbook...', function () {
       renderAll();
       var wb = buildExcoWorkbook(), name = 'RES Stock Breakdown ' + current.date + '.xlsx';
       return download(wb, name).then(function () {
-        putSnapshot(snapshotFrom(current.items, current.date, 'Weekly report: ' + current.fileName, A.t));
-        renderHistory();
+        saveToHistory('Weekly report');
         notice($('genMsg'), 'ok', 'Downloaded <strong>' + esc(name) + '</strong>. This week (' + fmtDate(current.date) + ') is saved to history.' +
           (state.storageOK ? '' : ' <strong>Warning:</strong> history could not be saved in this browser.'));
       });
@@ -1394,7 +1434,10 @@
     loadLogo();
     dropZone('drop', 'fileInput', handleFile);
     dropZone('dropMov', 'movInput', handleMovement);
-    $('reportDate').addEventListener('change', function () { if (current && this.value) { current.date = this.value; renderAll(); } });
+    $('reportDate').addEventListener('change', function () {
+      if (current && this.value) { current.date = this.value; current.dateConfirmed = true; setDateWarning(); renderAll(); }
+    });
+    $('btnSaveHist').addEventListener('click', saveHistoryOnly);
     $('reviewFilter').addEventListener('change', renderReview);
     $('reviewSearch').addEventListener('input', renderReview);
     function onSelect(e) {
