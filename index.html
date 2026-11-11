@@ -66,6 +66,7 @@
   details summary{cursor:pointer;font-weight:700}
   select.cat{min-width:200px} select.mark{min-width:120px}
   tr.changed td{background:#FFFBE0 !important}
+  input.needdate{border:2px solid var(--clay);background:#FFF5F4}
   footer{max-width:1100px;margin:0 auto;padding:8px 16px 30px;color:var(--muted);font-size:12px}
   @media (max-width:700px){
     main{padding:10px} .card{padding:12px} header img{height:44px} header h1{font-size:16px}
@@ -232,6 +233,7 @@
           <div><label for="reportDate">Stock date</label><input type="date" id="reportDate"></div>
           <div class="muted" style="flex:1;min-width:160px" id="fileInfo">No stock list loaded yet.</div>
         </div>
+        <div id="dateMsg"></div>
         <div id="parseMsg"></div>
       </div>
       <div>
@@ -281,8 +283,11 @@
 
     <section class="card">
       <h2><span class="step">6</span> Download the Exco workbook</h2>
-      <p class="muted" style="margin-top:0">SUMMARY, PTA Current Stock, General, Small Stock-Consumables, O&amp;M, PTA HIGH Value, the Cape Town tabs, Attic, Redundant, Dead &amp; Slow Stock and Data Checks. Downloading also saves this week to history.</p>
-      <button class="btn primary" id="btnGenerate">Download Exco Excel</button>
+      <p class="muted" style="margin-top:0">SUMMARY, PTA Current Stock, General, Small Stock-Consumables, O&amp;M, PTA HIGH Value, the Cape Town tabs, Attic, Redundant, Dead &amp; Slow Stock and Data Checks. Downloading also saves this stock list to history. Use <strong>Save to history only</strong> to save it without downloading.</p>
+      <div class="row">
+        <button class="btn primary" id="btnGenerate">Download Exco Excel</button>
+        <button class="btn ghost" id="btnSaveHist">Save to history only</button>
+      </div>
       <div id="genMsg"></div>
     </section>
 
@@ -320,7 +325,7 @@
 
   <section class="card">
     <h2>History</h2>
-    <p class="muted" style="margin-top:0">Each Exco download saves that week's quantities and totals here (used for "difference from last week" and as a back-up for dead stock). History lives in <strong>this browser on this device</strong>, so download a backup now and then.</p>
+    <p class="muted" style="margin-top:0">Stock lists are saved here when you tap <strong>Download Exco Excel</strong> or <strong>Save to history only</strong>, or add an older list below. Dead and slow stock is worked out by comparing the current stock list with the saved lists dated <strong>before</strong> it (and with the movement report). History lives in <strong>this browser on this device</strong>, so download a backup now and then.</p>
     <div class="tablewrap"><table id="histTable"></table></div>
     <div class="row" style="margin-top:12px">
       <button class="btn ghost" id="btnBackup">Download backup</button>
